@@ -1,7 +1,7 @@
 ---
 title: "Assignment 5 - Meta-analysis of pitch in schizophrenia"
-author: "Riccardo Fusaroli"
-date: "3/7/2017"
+author: "Kiri Koppelgaard"
+date: "12/7/2018"
 output:
   html_document: default
   pdf_document: default
@@ -96,13 +96,39 @@ forest(Model_variability)
 
 2. Do the results match your own analysis from Assignment 3? If you add your results to the meta-analysis, do the estimated effect sizes change? Report the new estimates and the new forest plots.
 
-The results from our own analysis in assignment 3 do to a large extend match up to the tendencies from the resuming studies. For the effect of mean pitch including our own analysis, we find that a diagnosis of schizophrenia is related to a higher mean pitch (yi = 0.23, 95% CIs: -0.04, 0.50). 
+The results from our own analysis in assignment 3 do to a large extend match up to the tendencies from the resuming studies. For the effect of pitch variaility, we find either a negative effect or no effect. 
+```{r, echo = FALSE}
+setwd("~/Cognitive Science/3. Semester/Experimental Methods 3/Portfolio-2/")
+#Readng the data from below
+p3_data_variability <- read.csv("p3_data_sd.csv")
+p3_data_mean <- read.csv("p3_data_m.csv")
+
+ggplot(p3_data_variability, aes(x = StudyID, y = yi ))  + #creating barplot and choosing axes
+  geom_bar(stat = "summary", fun.y = mean, aes(fill = StudyID)) + #adding barplot-layer with the y-axes as the mean of           tongue_twister and colour
+  geom_errorbar(stat = "summary", fun.data = mean_cl_boot, width = 0.2) + #Adding confidence intervals
+  labs( title = "Effect size for the effect of pitch variability") # adding labels
+
+```
+
+For the effect of pitch mean, two studies find a positive effect, and one find a negative effect. 
+```{r, echo = FALSE}
+
+ggplot(p3_data_mean, aes(x = StudyID, y = yi ))  + #creating barplot and choosing axes
+  geom_bar(stat = "summary", fun.y = mean, aes(fill = StudyID)) + #adding barplot-layer 
+  geom_errorbar(stat = "summary", fun.data = mean_cl_boot, width = 0.2) + #Adding confidence intervals
+  labs( title = "Effect size for the effect of pitch mean") # adding labels
+
+
+
+```
+
+For the effect of mean pitch including our own analysis, we find that a diagnosis of schizophrenia is related to a higher mean pitch (yi = 0.17, 95% CIs: -0.12, 0.47). 
 
 ```{r forest plots including our studies, echo = FALSE}
 setwd("~/Cognitive Science/3. Semester/Experimental Methods 3/Portfolio-2/")
 
-p_data_mean <- read.csv("p_data_m")
-p_data_variability <- read.csv("p_data_sd")
+p_data_mean <- read.csv("p_data_m.csv")
+p_data_variability <- read.csv("p_data_sd.csv")
 
 #mixed effects implementation
 Model_mean <- lmer(yi ~ 1 + (1 | StudyID), weights = 1/vi, data=p_data_mean,
@@ -115,7 +141,7 @@ Model_mean <- rma(yi, vi, data = p_data_mean, slab=Article)
 forest(Model_mean)
 ```
 
-For the effect of variability including our own analysis, we find that a diagnosis of schizephrenia is related to lower variability (yi = -044, 95% CIs: -0.73, -0.16)
+For the effect of variability including our own analysis, we find that a diagnosis of schizephrenia is related to lower variability (yi = -0.43, 95% CIs: -0.73, -0.13)
 
 ```{r forest plot for variability, echo = FALSE}
 #mixed effects implementation
@@ -134,13 +160,14 @@ forest(Model_variability)
 
 We calculated overall variance for the effect of pitch mean and variability (τ2) and assessed whether it could be explained by within-study variance (e.g., due to measurement noise or heterogeneity in the SZ samples included in the studies) using Cochran’s Q (Cochran, 1954) and I2 statistics (Higgins, Thompson, Deeks, & Altman, 2003)
 
-The overall variance for the effect of pitch mean (τ2) was 0.68 (95% CIs: 0.27 2.85). Much of the variance (I2: 96.28%, 95% CIs: 91.13 99.08) could not be reduced to random sample variability between studies (Q-stats = 488.5384, p < 0.0001).
+The overall variance for the effect of pitch mean (τ2) was 0.07 (95% CIs: 0.00 0.62). Much of the variance (I2: 45.91%, 95% CIs: 00.00 88.11) could not be reduced to random sample variability between studies (Q-stats = 11.06, p = 0.086).
 
-The overall variance for the effect of pitch variability (τ2) was 1.12 (95% CIs: 0.60 2.86). Much of the variance (I2: 97.03%, 95% CIs: 94.57 98.80) could not be reduced to random sample variability between studies (Q-stats = 267.71, p < 0.0001).
+The overall variance for the effect of pitch variability (τ2) was 0.16 (95% CIs: 0.04 0.78). Much of the variance (I2: 75.22%, 95% CIs: 45.20 93.39) could not be reduced to random sample variability between studies (Q-stats = 31.79 p = 0.0002).
 
-We could impute further studies to even out the publication biases, however this would assume our estimated 'real' effect size is true. This assumption is not necessarily valid. 
+Both the investigation of the effect of pitch mean and variability show a slight publication bias. We could impute further studies to even out the publication biases, however this would assume our estimated 'real' effect size is true. This assumption is not necessarily valid. 
 
-The heterogenety is clearly visible in the funnelplot below of the effect of pitch mean. 
+
+The heterogenety is visible in the funnelplot below of the effect of pitch mean. 
 
 ```{r funnelplot2, echo = FALSE}
 
@@ -152,7 +179,7 @@ funnel(Model_mean, main="Standard Error")
 
 ```
 
-The same accounts for the effect of variability. The heterogenety is clearly visible in the funnelplot below. 
+The same accounts for the effect of variability. The heterogenety is visible in the funnelplot below. 
 
 ```{r, echo = FALSE}
 ### draw funnel plots
@@ -269,10 +296,6 @@ setwd("~/Cognitive Science/3. Semester/Experimental Methods 3/Portfolio-2")
 
 pitch_data <- read.csv("pitch_data.csv")
 
-#defining models from the assignment
-model_mean <-lmer(mean ~ diagnosis + Gender  + (1+trial|Subject) + (1+trial|study), data = pitch_data, REML = FALSE)
-
-model_sd <-lmer(sd ~ diagnosis + Gender  + (1+trial|Subject) + (1+trial|study), data = pitch_data, REML = FALSE)
 
 #creating empty dataframe with column names to match the current data
 p3_data <- data.frame(matrix(ncol = 13, nrow = 3))
@@ -281,51 +304,52 @@ x <- c("frequency", "StudyID", "Article", "SAMPLE_SIZE_SZ", "SAMPLE_SIZE_HC", "P
 
 colnames(p3_data) <- x
 
-#making a prediction matrix
-df = distinct(pitch_data, diagnosis, study, Gender) %>%
-  mutate(trial = mean(pitch_data$trial)) %>%
-  filter(complete.cases(Gender))
+#ALTERNATIVE METHOD
+# 
+# #defining models from the assignment
+# model_mean <-lmer(mean ~ diagnosis + Gender  + study + trial + (1+trial|Subject), data = pitch_data, REML = FALSE)
+# 
+# model_sd <-lmer(sd ~ diagnosis + Gender  + study + trial + (1+trial|Subject), data = pitch_data, REML = FALSE)
+# 
+# 
+# #making a prediction matrix
+# df = distinct(pitch_data, diagnosis, study, Gender) %>%
+#   mutate(trial = mean(pitch_data$trial)) %>%
+#   filter(complete.cases(Gender))
+# 
+# df$pred <- predict(model_mean, newdata = df, re.form =NA, allow.new.levels = TRUE)
+# 
+# #making predictions for mean when the other are constant
+# df = df %>% group_by(diagnosis, study)%>%
+#   summarise(m = mean(pred), 
+#             sd = sd(pred))
+# 
 
-df
+#Extracting the mean and sd Malthe way
+df <- group_by(pitch_data, diagnosis, study) %>%
+  summarise(F0_M = mean(mean),
+            F0_SD =  sd(mean),
+            F0SD_M = mean(sd),
+            F0SD_SD = sd(sd))
 
-df$pred <- predict(model_mean, newdata = df, re.form = ~ (1|study), allow.new.levels = TRUE)
-
-df
-
-#making predictions for mean when the other are constant
-df = df %>% group_by(diagnosis, study)%>%
-  summarise(m = mean(pred), 
-            sd = sd(pred))
-
-df
-
+#Mean
 #inserting the predictions into the dataframe
-p3_data$PITCH_F0_HC_M <- df$m[1:3]
-p3_data$PITCH_F0_SZ_M <- df$m[4:6]
+p3_data$PITCH_F0_HC_M <- df$F0_M[1:3]
+p3_data$PITCH_F0_SZ_M <- df$F0_M[4:6]
 
 
 #inserting sd of the predictions
-p3_data$PITCH_F0_HC_SD <- df$sd[1:3]
-p3_data$PITCH_F0_SZ_SD <- df$sd[4:6]
+p3_data$PITCH_F0_HC_SD <- df$F0_SD[1:3]
+p3_data$PITCH_F0_SZ_SD <- df$F0_SD[4:6]
 
-#making predictions for sd, when the other effects of the model is constant
-df = distinct(pitch_data, diagnosis, study, Gender) %>%
-  mutate(trial = mean(pitch_data$trial)) %>%
-  filter(complete.cases(Gender))
-
-df$pred <- predict(model_sd, newdata = df, re.form = ~ (1|study), allow.new.levels = TRUE)
-
-df = group_by(df, diagnosis, study) %>%
-  summarise(m = mean(pred),
-            sd = sd(pred))
-
+#SD
 
 #inserting data into the dataframe
-p3_data$PITCH_F0SD_HC_M <- df$m[1:3]
-p3_data$PITCH_F0SD_SZ_M <- df$m[4:6]
+p3_data$PITCH_F0SD_HC_M <- df$F0SD_M[1:3]
+p3_data$PITCH_F0SD_SZ_M <- df$F0SD_M[4:6]
 
-p3_data$PITCH_F0SD_HC_SD <- df$sd[1:3]
-p3_data$PITCH_F0SD_SZ_SD <- df$sd[4:6]
+p3_data$PITCH_F0SD_HC_SD <- df$F0SD_SD[1:3]
+p3_data$PITCH_F0SD_SZ_SD <- df$F0SD_SD[4:6]
 
 #defining the other factors
 
@@ -355,8 +379,8 @@ m2i=PITCH_F0SD_HC_M, sd1i=PITCH_F0SD_HC_SD, sd2i=PITCH_F0SD_SZ_SD,
 data = p3_data)
 
 #Save csv, before loading plyr
-write.csv(p3_data_variability, "p3_data_sd")
-write.csv(p3_data_mean, "p3_data_m")
+write.csv(p3_data_variability, "p3_data_sd.csv")
+write.csv(p3_data_mean, "p3_data_m.csv")
 
 ```
 
@@ -372,8 +396,8 @@ p_data_mean <- rbind.fill(p_data_mean, p3_data_mean)
 p_data_variability <- rbind.fill(p_data_variability, p3_data_variability)
 
 #save csv
-write.csv(p_data_mean, "p_data_m")
-write.csv(p_data_variability, "p_data_sd")
+write.csv(p_data_mean, "p_data_m.csv")
+write.csv(p_data_variability, "p_data_sd.csv")
 
 ```
 
@@ -381,8 +405,8 @@ write.csv(p_data_variability, "p_data_sd")
 
 ```{r plotting the effect size of assignment 3, echo = FALSE, include = FALSE}
 setwd("~/Cognitive Science/3. Semester/Experimental Methods 3/Portfolio-2/")
-p_data_mean <- read.csv("p_data_m")
-p_data_variability <- read.csv("p_data_sd")
+p_data_mean <- read.csv("p_data_m.csv")
+p_data_variability <- read.csv("p_data_sd.csv")
 
 
 ggplot(p3_data_mean, aes(x = StudyID, y = yi ))  + #creating barplot and choosing axes
@@ -437,6 +461,7 @@ confint(Model_mean)
 confint(Model_variability)
 
 ```
+
 
 
 ```{r funnelplot, echo = FALSE, include = FALSE}
